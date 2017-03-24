@@ -24,7 +24,7 @@ WORKSHEET_ITEMIDS_COLUMN_COUNT = 4
 
 def read_nfc_blocking():
     nfchex = None
-    while nfchex != None:
+    while nfchex == None:
         nfchex = pn532.read_passive_target()
     return nfchex
 
@@ -135,7 +135,13 @@ while True:
         if status == CARD_TYPE_USER:
             print('Previously Registered ID found')
         elif status == CARD_TYPE_ITEM:
-            ScannedItems.index(itemidhex)
+            try:
+                # Check if it was already scanned.
+                ScannedItems.index(itemidhex)
+            except:
+                ItemCell = ItemIDs.find(str(itemidhex))
+                print ItemCell
+                ScannedItems.append(itemidhex)
         elif status == CARD_TYPE_UNKNOWN:
             NewItemEntry = raw_input('Item not recognized, would you like to register item? (y/n) ')
             if NewItemEntry == 'y':
