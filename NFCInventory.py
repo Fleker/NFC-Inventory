@@ -31,6 +31,9 @@ def read_nfc_blocking():
 def wait_for_card_removal():
     while pn532.read_passive_target() != None:
         continue
+
+def print_nfc_hex(nfchex):
+    print binascii.hexlify(nfchex)
         
 def process_card(nfchex):
     hexid = binascii.hexlify(nfchex)
@@ -38,7 +41,7 @@ def process_card(nfchex):
         return CARD_TYPE_INVALID_STATE
 
     try:
-        cell = UserIDs.find(str(hexid))
+        UserIDs.find(str(hexid))
         return CARD_TYPE_USER
     except:
         try:
@@ -52,7 +55,7 @@ def login_open_sheet(oauth_key_file, spreadsheet):
         scope = ['https://spreadsheets.google.com/feeds']
         credentials = ServiceAccountCredentials.from_json_keyfile_name(oauth_key_file, scope)
         gc = gspread.authorize(credentials)
-        print(dir(gc.open(spreadsheet)))
+        # print(dir(gc.open(spreadsheet)))
         WorkSheets = gc.open(spreadsheet).worksheets()
         UserIDs = gc.open(spreadsheet).worksheet('UserID')
         ItemIDs = gc.open(spreadsheet).worksheet('ItemID')
@@ -89,11 +92,11 @@ while True:
     UserIDRow = -1
     print('Found card with UID: 0x{0}'.format(binascii.hexlify(uid)))
     uidhex = binascii.hexlify(uid)
-    print(uidhex)
     if UserIDs is None or ItemIDs is None:
         [UserIDs, ItemIDs] = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
         
-    status = process_card(uidhex)
+    status = process_card(uid)
+    print('Status type is ' + str(status))
     if status == CARD_TYPE_USER:
         cell = UserIDs.find(str(uidhex))
         print cell
@@ -131,7 +134,7 @@ while True:
         itemidhex = binascii.hexlify(itemid)
         print(itemidhex)
         
-        status = process_card(itemidhex)
+        status = process_card(itemid)
         if status == CARD_TYPE_USER:
             print('Previously Registered ID found')
         elif status == CARD_TYPE_ITEM:
